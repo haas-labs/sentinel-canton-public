@@ -1,0 +1,44 @@
+[project]
+name = "sentinel-canton"
+version = "0.1.0"
+description = "Open-source Canton detectors over the CantonUpdate stream (standalone, no private SDK)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+dependencies = [
+    "ext-sentinel-py-sdk @ git+https://github.com/haas-labs/ext-sentinel-py-sdk",
+    "aiokafka>=0.11",
+    "pydantic>=2.6",
+    "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+# capability_drift's Admin-API path (party-hosting topology via the Canton Admin API) needs gRPC.
+# It is gated on admin_api_url; without this extra the detector runs its Ledger-API half only.
+admin = [
+    "grpcio>=1.60",
+    "protobuf>=4.25",
+]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+]
+
+[project.scripts]
+sentinel-canton = "sentinel_canton.runner:cli"
+
+[build-system]
+requires = ["setuptools>=77"]  # PEP 639 SPDX license expression + license-files
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+sentinel_canton = ["**/*.pb"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# coverage report on every run; `pytest --no-cov` skips it
+addopts = "--cov=sentinel_canton --cov-report=term-missing:skip-covered"

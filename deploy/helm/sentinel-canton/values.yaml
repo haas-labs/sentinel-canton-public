@@ -1,0 +1,49 @@
+image:
+  repository: sentinel-canton
+  tag: "0.1.0"
+  pullPolicy: IfNotPresent
+
+# Which detector this release runs (see the registry): stakeholder_anomaly |
+# informee_anomaly | topology_drift | reassignment_limbo | capability_drift.
+# Install the chart once per detector you want running.
+# capability_drift's confirmation-threshold half also needs an image built with EXTRAS=[admin]
+# (grpc) and canton.parameters.admin_api_url set; without them it runs its permission half only.
+detector: ""  # required
+
+replicaCount: 1
+
+canton:
+  kafkaBootstrap: "redpanda:19092"
+  txTopic: "canton.localnet.tx"        # the stream the trunk-canton adapter produces
+  eventsTopic: "canton.localnet.events"
+  consumerGroup: "sentinel-canton"
+  # capability_drift's participant Admin API (host:port). Empty = threshold half off.
+  adminApiUrl: ""
+  # JSON string of detector parameters (monitored_parties, thresholds, ...). Empty = profile defaults.
+  parameters: ""
+
+# Stateful detectors (reassignment_limbo, topology_drift) persist JSON state; enable for those.
+# reassignment_limbo needs it: without a volume, every restart forgets the open reassignments, so a
+# contract frozen across a restart (a deploy, a crash) is never reported. Enabled, the chart mounts
+# the PVC, sets CANTON_STATE_DIR and uses the Recreate strategy (one writer). A deploy stops the pod
+# with SIGTERM, which the runner handles by writing pending state before exit (well within the
+# default 30s terminationGracePeriodSeconds); without that write, an assign seen just before the stop
+# would be missing from the file and raise a false limbo alert after the restart. A hard kill
+# (OOMKilled, SIGKILL) can still lose up to save_interval_seconds of changes.
+persistence:
+  enabled: false
+  size: 1Gi
+  # storageClass: ""
+  mountPath: /data
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

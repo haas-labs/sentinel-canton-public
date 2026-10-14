@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    name: tests (py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      # installs the package and the Sentinel SDK (a public git dependency); git is preinstalled
+      - run: pip install -e ".[dev]"
+      - run: pytest -q
+
+  test-admin:
+    name: tests (admin extra, py3.12)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # the [admin] extra pulls grpc/protobuf so capability_drift's Admin-API reader is built and the
+      # shipped topology_admin_v30.pb is actually parsed; without it that smoke test self-skips
+      - run: pip install -e ".[admin,dev]"
+      - run: python -c "import grpc"  # fail loudly if the extra did not install, so the smoke runs
+      - run: pytest -q
+
+  docker:
+    name: docker build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # default image (no grpc) and the admin image, which bundles the reader's grpc/protobuf deps
+      - run: docker build -f deploy/Dockerfile -t sentinel-canton:ci .
+      - run: docker build -f deploy/Dockerfile --build-arg 'EXTRAS=[admin]' -t sentinel-canton:ci-admin .
+
+  helm:
+    name: helm lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+      - run: helm lint deploy/helm/sentinel-canton

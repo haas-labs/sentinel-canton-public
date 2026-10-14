@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "sentinel-canton.fullname" . }}
+  labels:
+    {{- include "sentinel-canton.labels" . | nindent 4 }}
+data:
+  CANTON_DETECTOR: {{ required "detector is required (see values.yaml)" .Values.detector | quote }}
+  CANTON_INPUT: "kafka"
+  CANTON_KAFKA_BOOTSTRAP: {{ .Values.canton.kafkaBootstrap | quote }}
+  CANTON_TX_TOPIC: {{ .Values.canton.txTopic | quote }}
+  CANTON_EVENTS_TOPIC: {{ .Values.canton.eventsTopic | quote }}
+  CANTON_CONSUMER_GROUP: {{ printf "%s-%s" .Values.canton.consumerGroup .Values.detector | quote }}
+  CANTON_ADMIN_API_URL: {{ .Values.canton.adminApiUrl | quote }}
+  CANTON_PARAMETERS: {{ .Values.canton.parameters | quote }}
+  {{- if .Values.persistence.enabled }}
+  # the mounted state PVC; reassignment_limbo needs it (see persistence in values.yaml)
+  CANTON_STATE_DIR: {{ .Values.persistence.mountPath | quote }}
+  {{- end }}

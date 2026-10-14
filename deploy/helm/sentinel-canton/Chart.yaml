@@ -1,0 +1,6 @@
+apiVersion: v2
+name: sentinel-canton
+description: Canton detectors over the CantonUpdate stream - one release per detector
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
