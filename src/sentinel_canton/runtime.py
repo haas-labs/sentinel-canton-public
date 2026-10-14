@@ -17,7 +17,7 @@ import os
 import time
 from collections import deque
 from types import SimpleNamespace
-from typing import Any, Deque, Dict, Optional, Set
+from typing import Any, Deque, Dict, Optional, Set, Tuple
 
 from sentinel.manifest import Severity
 from sentinel.models.event import Blockchain, Event
@@ -93,8 +93,11 @@ class CantonUpdateDetector:
         self.description = description or type(self).description
         self.parameters = dict(parameters or {})
         self.logger = logging.getLogger("canton://" + self.name)
-        self._recent_ids: Deque[str] = deque(maxlen=RECENT_UPDATES)
-        self._recent_set: Set[str] = set()
+        self._recent_ids: Deque[Tuple[Optional[str], str]] = deque(maxlen=RECENT_UPDATES)
+        self._recent_set: Set[Tuple[Optional[str], str]] = set()
+        self.participant_id: Optional[str] = None  # the node this detector watches; None = any
+        self._participants_seen: Set[str] = set()
+        self._warned_unstamped = False
         # inputs/outputs are wired by the runner; init() binds the update handler, emit() uses events.
         self.inputs = SimpleNamespace(updates=SimpleNamespace(on_update=None))
         self.outputs = SimpleNamespace(events=None)
@@ -103,22 +106,50 @@ class CantonUpdateDetector:
         """Sync setup: bind the update handler and apply parameters. The runner calls this once."""
         self.inputs.updates.on_update = self.handle_update
         self.profile_parameters = dict(self.parameters or {})
+        self.participant_id = self.profile_parameters.get("participant_id") or None
+        if self.participant_id:
+            self.logger.info(f"participant scope: {self.participant_id}")
         self.configure(dict(self.profile_parameters))
 
     async def on_init(self) -> None:
         """Async startup hook (e.g. to spawn a background ticker). Base is a no-op."""
 
+    def in_scope(self, update: CantonUpdate) -> bool:
+        """Whether an update belongs to the node this detector watches (the participant_id
+        parameter). Several trunks can share one topic, each stamping its node on every record; an
+        update from another node is dropped before dedup and before on_update, snapshots included.
+        A record without participant_id (published before the field existed) is accepted."""
+        source = getattr(update, "participant_id", None)
+        if source is None:
+            if self.participant_id and not self._warned_unstamped:
+                self._warned_unstamped = True
+                self.logger.warning("updates without participant_id on the topic: accepted as this detector's node")
+            return True
+        if self.participant_id:
+            return source == self.participant_id
+        if source not in self._participants_seen:
+            self._participants_seen.add(source)
+            if len(self._participants_seen) == 2:
+                self.logger.warning("updates from more than one participant on the topic and no participant_id "
+                                    "parameter: every node's copy of a transaction is handled; set participant_id")
+        return True
+
     async def handle_update(self, update: CantonUpdate) -> None:
-        """Dedup by update_id (a republished page is harmless), then dispatch to on_update.
-        Snapshots carry no update_id and are never deduplicated."""
+        """Drop other nodes' updates, dedup by (participant_id, update_id) (a republished page is
+        harmless), then dispatch to on_update. update_id alone is not enough on a shared topic: the
+        same transaction seen by two nodes has one update_id, and the second node's copy would be
+        dropped without a trace. Snapshots carry no update_id and are never deduplicated."""
+        if not self.in_scope(update):
+            return
         if update.update_id:
-            if update.update_id in self._recent_set:
+            key = (getattr(update, "participant_id", None), update.update_id)
+            if key in self._recent_set:
                 self.logger.info(f"update {update.update_id[:12]}… already seen, skipped")
                 return
             if len(self._recent_ids) == self._recent_ids.maxlen:
                 self._recent_set.discard(self._recent_ids[0])
-            self._recent_ids.append(update.update_id)
-            self._recent_set.add(update.update_id)
+            self._recent_ids.append(key)
+            self._recent_set.add(key)
         await self.on_update(update)
 
     async def on_update(self, update: CantonUpdate) -> None:
@@ -163,6 +194,7 @@ class CantonUpdateDetector:
                     "offset": update.offset,
                     "update_id": update.update_id,
                     "synchronizer_id": update.synchronizer_id,
+                    "source_participant_hash": hash_id(getattr(update, "participant_id", None)),
                     "policy": self.policy,
                     **metadata,
                 }

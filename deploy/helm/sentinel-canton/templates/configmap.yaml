@@ -13,6 +13,7 @@ data:
   CANTON_CONSUMER_GROUP: {{ printf "%s-%s" .Values.canton.consumerGroup .Values.detector | quote }}
   CANTON_ADMIN_API_URL: {{ .Values.canton.adminApiUrl | quote }}
   CANTON_PARAMETERS: {{ .Values.canton.parameters | quote }}
+  CANTON_PARTICIPANT_ID: {{ .Values.canton.participantId | default "" | quote }}
   {{- if .Values.persistence.enabled }}
   # the mounted state PVC; reassignment_limbo needs it (see persistence in values.yaml)
   CANTON_STATE_DIR: {{ .Values.persistence.mountPath | quote }}
