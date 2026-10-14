@@ -1,10 +1,12 @@
 from typing import Dict, List
 
 from pydantic import Field
-from sentinel.manifest import BaseSchema, MetadataModel, NetworkTag, Status, Tag
+from sentinel.manifest import MetadataModel, NetworkTag, Status, Tag
+
+from sentinel_canton.schema import CantonSchema
 
 
-class Schema(BaseSchema):
+class Schema(CantonSchema):
     """
     Configuration of the Canton informee-tree anomaly detector.
     """
@@ -22,7 +24,7 @@ class Schema(BaseSchema):
 metadata = MetadataModel(
     name="Canton Informee Anomaly",
     title="Canton Informee Anomaly",
-    version="0.2.0",
+    version="0.2.1",
     status=Status.ACTIVE,
     icon="https://cdn-icons-png.flaticon.com/512/11494/11494910.png",
     description=(

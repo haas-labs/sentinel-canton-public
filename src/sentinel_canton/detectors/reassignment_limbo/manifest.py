@@ -1,10 +1,12 @@
 from typing import List
 
 from pydantic import Field
-from sentinel.manifest import BaseSchema, MetadataModel, NetworkTag, Severity, Status, Tag
+from sentinel.manifest import MetadataModel, NetworkTag, Severity, Status, Tag
+
+from sentinel_canton.schema import CantonSchema
 
 
-class Schema(BaseSchema):
+class Schema(CantonSchema):
     """Configuration of the Canton reassignment limbo detector."""
 
     monitored_parties: List[str] = Field(default_factory=list, title="Monitored parties", description="The client's parties: only unassigns they submitted or are a stakeholder of are tracked (empty = all)")
@@ -20,7 +22,7 @@ class Schema(BaseSchema):
 metadata = MetadataModel(
     name="Canton Reassignment Limbo",
     title="Canton Reassignment Limbo",
-    version="0.2.0",
+    version="0.2.1",
     status=Status.ACTIVE,
     icon="https://cdn-icons-png.flaticon.com/512/11494/11494910.png",
     description=(

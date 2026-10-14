@@ -1,10 +1,12 @@
 from typing import Dict, List
 
 from pydantic import Field
-from sentinel.manifest import BaseSchema, MetadataModel, NetworkTag, Status, Tag
+from sentinel.manifest import MetadataModel, NetworkTag, Status, Tag
+
+from sentinel_canton.schema import CantonSchema
 
 
-class Schema(BaseSchema):
+class Schema(CantonSchema):
     """Configuration of the Canton topology drift detector."""
 
     monitored_parties: List[str] = Field(default_factory=list, title="Monitored parties", description="The client's parties; every other party is a counterparty")
@@ -16,7 +18,7 @@ class Schema(BaseSchema):
 metadata = MetadataModel(
     name="Canton Topology Drift",
     title="Canton Topology Drift",
-    version="0.1.1",
+    version="0.1.2",
     status=Status.ACTIVE,
     icon="https://cdn-icons-png.flaticon.com/512/11494/11494910.png",
     description=(
