@@ -36,6 +36,7 @@ metadata = MetadataModel(
     tags=[Tag.SECURITY, Tag.COMPLIANCE],
     network_tags=[NetworkTag.CANTON],
     faq=[
-        {"name": "What can it see?", "value": "Only the sub-actions where one of the client's parties is an informee; that is Canton's sub-transaction privacy."},
+        {"name": "What can it see?", "value": "Only the sub-actions, on the node it watches, where one of the client's parties is an informee; that is Canton's sub-transaction privacy."},
+        {"name": "Which node does it watch?", "value": "Only the node set in Participant (node). Leave it empty when a single node feeds the topic; set it when several nodes publish to the same topic, so the alerts never come from another company's node."},
     ],
 )

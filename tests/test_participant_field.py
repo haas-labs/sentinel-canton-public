@@ -16,3 +16,9 @@ def test_the_form_has_the_participant_field(detector):
     assert prop["default"] == ""
     assert "Empty = any node" in prop["description"]
     assert manifest.Schema().participant_id == ""
+
+
+@pytest.mark.parametrize("detector", DETECTORS)
+def test_the_faq_says_which_node_it_watches(detector):
+    manifest = importlib.import_module(f"sentinel_canton.detectors.{detector}.manifest")
+    assert manifest.metadata.faq[-1].name == "Which node does it watch?"

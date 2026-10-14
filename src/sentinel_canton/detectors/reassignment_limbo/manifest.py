@@ -36,5 +36,6 @@ metadata = MetadataModel(
         {"name": "Which clock?", "value": "Ledger time: the latest record_time seen, including checkpoints; the wall clock only fills in when no update arrives."},
         {"name": "After a restart?", "value": "Open reassignments come back from the state file, and the bootstrap snapshot lists pending ones too."},
         {"name": "How much is lost on a crash?", "value": "Up to save_interval_seconds of open/close changes on a hard kill (SIGKILL, OOM, node loss); a clean stop (SIGTERM, SIGINT) writes them first, and on a quiet stream a held-back change is written when the interval ends. save_interval_seconds=0 loses nothing, at the cost of a write per change. A lost close can raise a false limbo alert after the restart; a lost open comes back only through the bootstrap snapshot."},
+        {"name": "Which node does it watch?", "value": "Only the node set in Participant (node). Leave it empty when a single node feeds the topic; set it when several nodes publish to the same topic, so the alerts never come from another company's node."},
     ],
 )

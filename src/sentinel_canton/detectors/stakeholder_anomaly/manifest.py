@@ -52,5 +52,6 @@ metadata = MetadataModel(
             "name": "How is the limit chosen?",
             "value": "max_stakeholders_by_template first (full template id or Module:Entity), then max_stakeholders_default.",
         },
+        {"name": "Which node does it watch?", "value": "Only the node set in Participant (node). Leave it empty when a single node feeds the topic; set it when several nodes publish to the same topic, so the alerts never come from another company's node."},
     ],
 )

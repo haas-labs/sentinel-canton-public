@@ -29,7 +29,8 @@ metadata = MetadataModel(
     tags=[Tag.SECURITY],
     network_tags=[NetworkTag.CANTON],
     faq=[
-        {"name": "What does it see?", "value": "Every party hosted on the synchronizers the client's participant is connected to; the topology is public by design."},
+        {"name": "What does it see?", "value": "The hosting of every party the node's Ledger API user may read: the client's own parties with CanReadAs, every party on the synchronizer with CanReadAsAnyParty. Topology is authorized per party, like transactions."},
         {"name": "First contact?", "value": "A never-seen party records its baseline and emits an informational event; drift alerts start from the next change."},
+        {"name": "Which node does it watch?", "value": "Only the node set in Participant (node). Leave it empty when a single node feeds the topic; set it when several nodes publish to the same topic, so the alerts never come from another company's node."},
     ],
 )

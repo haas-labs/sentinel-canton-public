@@ -35,6 +35,7 @@ metadata = MetadataModel(
     tags=[Tag.SECURITY],
     network_tags=[NetworkTag.CANTON],
     faq=[
-        {"name": "Why two modes?", "value": "Permission changes arrive on the Ledger API; the confirmation threshold does not, it is only readable through the participant's Admin API."},
+        {"name": "Why two modes?", "value": "Permission changes arrive on the Ledger API; the confirmation threshold does not, it is only readable through the participant's Admin API. Point the Admin API at the same node as Participant (node)."},
+        {"name": "Which node does it watch?", "value": "Only the node set in Participant (node). Leave it empty when a single node feeds the topic; set it when several nodes publish to the same topic, so the alerts never come from another company's node."},
     ],
 )
