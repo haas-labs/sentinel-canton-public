@@ -83,6 +83,13 @@ def test_topology_drift_seen_by_node_b_does_not_alert_node_a():
     assert [e.type for e in events if e.type == "canton_topology_drift"] == ["canton_topology_drift"] * 2
 
 
+def test_topology_drift_from_two_trunks_alerts_each_node_once():
+    bootstrap, drift = _two_trunks("quiet_bootstrap.jsonl", b_first=True), _two_trunks("369_topology_drift.jsonl", b_first=True)
+    for node in (NODE_A, NODE_B):
+        _, events = _feed("topology_drift", {"participant_id": node}, bootstrap + drift)
+        assert [e.type for e in events if e.category == "ALERT"] == ["canton_topology_drift", "canton_topology_drift"]
+
+
 def test_records_without_participant_id_are_still_judged():
     _, events = _feed("stakeholder_anomaly", {"participant_id": NODE_A}, _updates("371_stakeholder_bloat.jsonl"))
     assert events and all("source_participant_hash" not in e.metadata for e in events)
