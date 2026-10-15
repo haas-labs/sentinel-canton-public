@@ -29,9 +29,7 @@ class CapabilityDriftDetector(CantonUpdateDetector):
     description = "Alerts when a counterparty's hosting permissions or confirmation threshold get weaker"
 
     def init(self) -> None:
-        super().init()  # configures from the profile, then applies the condition in force, if any
-        if self.admin_api_url:
-            self.reader = self.build_reader()
+        super().init()  # configures from the profile (builds the reader), then applies the condition in force
 
     def build_reader(self):
         """Build the Admin-API reader, turning its two cryptic failures into a clear message. Without
@@ -66,9 +64,28 @@ class CapabilityDriftDetector(CantonUpdateDetector):
             raise
 
     async def on_init(self) -> None:
-        # init() runs before the event loop exists; the poller can only be scheduled here
+        # init() runs before the event loop exists; the poller can only be scheduled once it does
+        self.reschedule_poller()
+
+    async def on_config_change(self, record=None, config=None) -> None:
+        # a live monitoring-condition change re-runs configure() (a new reader) inside the loop;
+        # point the poller at it. configure() itself must not touch the poller: at init it runs
+        # before the loop, and on_init() owns the first scheduling.
+        await super().on_config_change(record, config)
+        self.reschedule_poller()
+
+    def reschedule_poller(self) -> None:
+        """Cancel any running threshold poller and start one iff a reader exists; a no-op before the loop."""
+        task = getattr(self, "poller_task", None)
+        if task is not None and not task.done():
+            task.cancel()
+        self.poller_task = None
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            return  # no event loop yet (first start, inside init); on_init() will schedule it
         if self.reader is not None:
-            asyncio.create_task(self.threshold_poller(), name="capability-drift-threshold-poller")
+            self.poller_task = loop.create_task(self.threshold_poller(), name="capability-drift-threshold-poller")
 
     def configure(self, parameters: Dict) -> None:
         parameters = parameters or {}
@@ -83,7 +100,8 @@ class CapabilityDriftDetector(CantonUpdateDetector):
         self.severity = severity_or(parameters.get("severity"), Severity.HIGH)
         self.severity_threshold = severity_or(parameters.get("severity_threshold"), Severity.CRITICAL)
         self.state = TopologyState(parameters.get("state_path") or None)
-        self.reader = None  # AdminTopologyReader, opened in init when admin_api_url is set (tests inject a fake)
+        # rebuilt on every (re)configure, so a condition change reaches the poller; tests may replace it afterwards
+        self.reader = self.build_reader() if self.admin_api_url else None
         self.last_offset = 0
         self.seen = Counter()
         self.policy_name, self.policy_version = manifest.metadata.name, manifest.metadata.version

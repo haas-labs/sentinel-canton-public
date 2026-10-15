@@ -8,7 +8,9 @@ seams -- configure() for parameters in, and emit()/outputs.events.send() for ale
 This module reimplements CantonUpdateDetector as a thin base with no SDK dependency: the pure helpers
 (flat_metadata, hash_id, emit) are copied verbatim, and the framework runtime is replaced by the
 runner in runner.py, which wires inputs/outputs and drives the update loop. The monitoring-conditions
-machinery is dropped; parameters come once from configure() (profile/env).
+machinery (conditions topic, database, policy sync) is dropped; parameters come from configure()
+(profile/env). on_config_change() keeps the SDK's signature and applies a Configuration handed to it
+directly, so a detector that reacts to a live condition change behaves the same on both bases.
 """
 import hashlib
 import json
@@ -20,6 +22,7 @@ from types import SimpleNamespace
 from typing import Any, Deque, Dict, Optional, Set, Tuple
 
 from sentinel.manifest import Severity
+from sentinel.models.config import Configuration, Status
 from sentinel.models.event import Blockchain, Event
 from sentinel.models.chains.canton.update import CantonUpdate
 
@@ -106,10 +109,40 @@ class CantonUpdateDetector:
         """Sync setup: bind the update handler and apply parameters. The runner calls this once."""
         self.inputs.updates.on_update = self.handle_update
         self.profile_parameters = dict(self.parameters or {})
-        self.participant_id = self.profile_parameters.get("participant_id") or None
-        if self.participant_id:
-            self.logger.info(f"participant scope: {self.participant_id}")
+        self.scope_participant(self.profile_parameters)
         self.configure(dict(self.profile_parameters))
+
+    def scope_participant(self, parameters: Dict) -> None:
+        """The node this detector watches: the participant_id parameter; None = any node on the topic."""
+        value = (parameters or {}).get("participant_id") or None
+        if value and value != getattr(self, "participant_id", None):
+            self.logger.info(f"participant scope: {value}")
+        self.participant_id = value
+
+    async def on_config_change(self, record: Any = None, config: Optional[Configuration] = None) -> None:
+        """A monitoring condition for this detector, as the SDK's base applies it: a condition of
+        another detector (schema name != policy_name) is ignored; an ACTIVE one lands on top of the
+        profile parameters, its entity (contract.address) becoming a monitored party unless it names
+        them itself; any other status restores the profile. Only a parsed Configuration is applied:
+        there is no conditions topic or database here."""
+        if config is None and isinstance(record, Configuration):
+            config = record
+        if config is None:
+            return
+        if self.policy_name and config.config_schema.name != self.policy_name:
+            return
+        base = dict(self.profile_parameters if hasattr(self, "profile_parameters") else self.parameters or {})
+        if config.status != Status.ACTIVE:
+            self.logger.info(f"configuration {config.id} {config.status.value}: back to profile parameters")
+        else:
+            fields = dict(config.config or {})
+            party = getattr(config.contract, "address", None)
+            if party and not fields.get("monitored_parties"):
+                fields["monitored_parties"] = sorted(set(base.get("monitored_parties") or []) | {party})
+            base.update(fields)
+            self.logger.info(f"configuration {config.id} applied: {sorted(fields.keys())}")
+        self.scope_participant(base)
+        self.configure(base)
 
     async def on_init(self) -> None:
         """Async startup hook (e.g. to spawn a background ticker). Base is a no-op."""
