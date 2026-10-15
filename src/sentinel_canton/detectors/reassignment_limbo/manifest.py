@@ -20,11 +20,12 @@ class Schema(CantonSchema):
 
 
 metadata = MetadataModel(
-    name="Canton Reassignment Limbo",
+    name="Canton-ReassignmentLimbo",
     title="Canton Reassignment Limbo",
+    author="hacken",
     version="0.2.1",
     status=Status.ACTIVE,
-    icon="https://cdn-icons-png.flaticon.com/512/11494/11494910.png",
+    icon="https://directus.messari.io/assets/ff4a67ec-8a37-436b-97d6-4a9e26ad33e3",
     description=(
         "Alerts when a contract unassigned from one synchronizer is not assigned on the target "
         "within the window: between the two steps it is usable on neither side, and a stalled "

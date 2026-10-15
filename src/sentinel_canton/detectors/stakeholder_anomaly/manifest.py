@@ -31,11 +31,12 @@ class Schema(CantonSchema):
 
 
 metadata = MetadataModel(
-    name="Canton Stakeholder Anomaly",
+    name="Canton-StakeholderAnomaly",
     title="Canton Stakeholder Anomaly",
-    version="0.1.2",
+    author="hacken",
+    version="0.2.1",
     status=Status.ACTIVE,
-    icon="https://cdn-icons-png.flaticon.com/512/11494/11494910.png",
+    icon="https://directus.messari.io/assets/ff4a67ec-8a37-436b-97d6-4a9e26ad33e3",
     description=(
         "Alerts when a contract the client is party to is created with more signatories plus "
         "observers than the template's policy allows. Every listed party must store the contract, "

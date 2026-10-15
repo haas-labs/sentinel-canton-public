@@ -22,11 +22,12 @@ class Schema(CantonSchema):
 
 
 metadata = MetadataModel(
-    name="Canton Informee Anomaly",
+    name="Canton-InformeeAnomaly",
     title="Canton Informee Anomaly",
+    author="hacken",
     version="0.2.1",
     status=Status.ACTIVE,
-    icon="https://cdn-icons-png.flaticon.com/512/11494/11494910.png",
+    icon="https://directus.messari.io/assets/ff4a67ec-8a37-436b-97d6-4a9e26ad33e3",
     description=(
         "Alerts when, within the client's own view, a sub-action under a choice is witnessed by a party "
         "that is not its own informee (no configuration), or a party appears on a template where it is "

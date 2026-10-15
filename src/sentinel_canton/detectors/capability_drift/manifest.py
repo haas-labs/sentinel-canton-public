@@ -22,11 +22,12 @@ class Schema(CantonSchema):
 
 
 metadata = MetadataModel(
-    name="Canton Capability Drift",
+    name="Canton-CapabilityDrift",
     title="Canton Capability Drift",
-    version="0.1.4",
+    author="hacken",
+    version="0.2.1",
     status=Status.ACTIVE,
-    icon="https://cdn-icons-png.flaticon.com/512/11494/11494910.png",
+    icon="https://directus.messari.io/assets/ff4a67ec-8a37-436b-97d6-4a9e26ad33e3",
     description=(
         "Alerts when a counterparty becomes easier to hijack: a hosting participant gains "
         "Confirmation or Submission permission it did not have, or (with Admin API access) the "

@@ -42,6 +42,10 @@ Each detector ships a `manifest.py` with a `Schema` (its parameters, used to val
 `CANTON_PARAMETERS`) and a `MetadataModel` (name, version, icon, tags, FAQ, status). Standalone only
 `name` and `version` are read at runtime; the rest is the detector's **registration contract for the
 Extractor platform** and is kept intact so a detector can be registered there without a second source.
+The platform matches a monitoring condition to its detector by the schema `name` and the `0.2` version
+line, so `name` and `version` follow the platform's registered schemas (`Canton-TopologyDrift`,
+`Canton-CapabilityDrift`, `Canton-StakeholderAnomaly`, `Canton-ReassignmentLimbo`,
+`Canton-InformeeAnomaly`, all `0.2.x`); a different name drops every condition without a log line.
 
 ### Parameters per detector
 

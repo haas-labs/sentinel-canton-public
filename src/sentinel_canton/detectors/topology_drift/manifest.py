@@ -16,11 +16,12 @@ class Schema(CantonSchema):
 
 
 metadata = MetadataModel(
-    name="Canton Topology Drift",
+    name="Canton-TopologyDrift",
     title="Canton Topology Drift",
-    version="0.1.2",
+    author="hacken",
+    version="0.2.1",
     status=Status.ACTIVE,
-    icon="https://cdn-icons-png.flaticon.com/512/11494/11494910.png",
+    icon="https://directus.messari.io/assets/ff4a67ec-8a37-436b-97d6-4a9e26ad33e3",
     description=(
         "Alerts when a counterparty changes the participant that hosts it mid-relationship, or is "
         "newly hosted on a participant never seen for it. A party changing hosting is the Canton "
