@@ -91,7 +91,7 @@ pip is older than 21.3.
 
 ```bash
 pip install .                 # core; add .[dev] for tests, .[admin] for capability_drift's Admin-API path
-docker build -f deploy/Dockerfile -t sentinel-canton:0.1.0 .
+docker build -f deploy/Dockerfile -t sentinel-canton:0.2.0 .
 ```
 
 ## Run
@@ -144,7 +144,7 @@ One release per detector; select it with `--set detector=...`:
 
 ```bash
 helm install stakeholder deploy/helm/sentinel-canton \
-  --set image.repository=<registry>/sentinel-canton --set image.tag=0.1.0 \
+  --set image.repository=<registry>/sentinel-canton --set image.tag=0.2.0 \
   --set detector=stakeholder_anomaly \
   --set canton.kafkaBootstrap=<broker>:9092 \
   --set canton.txTopic=canton.devnet.tx
