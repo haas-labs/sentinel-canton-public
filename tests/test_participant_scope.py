@@ -102,3 +102,23 @@ def test_participant_id_from_the_env_and_parameters_win(monkeypatch):
     monkeypatch.setenv("CANTON_PARAMETERS", '{"participant_id": "%s"}' % NODE_B)
     assert _parameters("stakeholder_anomaly")["participant_id"] == NODE_B
     build_detector("stakeholder_anomaly", {"participant_id": NODE_A})  # a runner key: passes validation
+
+
+def test_empty_participant_id_saved_from_the_ui_does_not_override_the_env(monkeypatch):
+    # The platform form saves the CantonSchema default (participant_id=""): the node set by Helm
+    # (CANTON_PARTICIPANT_ID) must still scope the detector, or it alerts on another node's data.
+    monkeypatch.setenv("CANTON_PARTICIPANT_ID", NODE_A)
+    monkeypatch.setenv("CANTON_PARAMETERS", '{"participant_id": ""}')
+    params = _parameters("stakeholder_anomaly")
+    assert params["participant_id"] == NODE_A
+    detector, events = _feed("stakeholder_anomaly", params, _updates("371_stakeholder_bloat.jsonl", NODE_B))
+    assert detector.participant_id == NODE_A
+    assert events == []
+
+
+def test_participant_id_from_the_env_is_stripped(monkeypatch):
+    monkeypatch.delenv("CANTON_PARAMETERS", raising=False)
+    monkeypatch.setenv("CANTON_PARTICIPANT_ID", "  %s\n" % NODE_A)
+    assert _parameters("stakeholder_anomaly")["participant_id"] == NODE_A
+    monkeypatch.setenv("CANTON_PARTICIPANT_ID", "   ")
+    assert "participant_id" not in _parameters("stakeholder_anomaly")
