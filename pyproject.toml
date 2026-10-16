@@ -7,7 +7,7 @@ requires-python = ">=3.10"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
 dependencies = [
-    "ext-sentinel-py-sdk @ git+https://github.com/haas-labs/ext-sentinel-py-sdk",
+    "ext-sentinel-py-sdk @ git+https://github.com/haas-labs/ext-sentinel-py-sdk@v0.5.87",  # CantonUpdate.participant_id
     "aiokafka>=0.11",
     "pydantic>=2.6",
     "python-dotenv>=1.0",

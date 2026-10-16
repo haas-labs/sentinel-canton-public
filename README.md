@@ -136,7 +136,7 @@ or its alerts. Deduplication is by `(participant_id, update_id)`, since the same
 by two nodes has one `update_id`. Records without `participant_id` are still read. An unscoped
 detector handles every node's copy and logs a warning once a second node appears. Alerts carry the
 node as `source_participant_hash` (sha256). Reading the field needs the Sentinel SDK with
-`CantonUpdate.participant_id` (ext-sentinel-py-sdk 0.5.87 or later).
+`CantonUpdate.participant_id` (ext-sentinel-py-sdk 0.5.87 or later; pyproject.toml pins `v0.5.87`).
 
 ## Deploy (Helm)
 
