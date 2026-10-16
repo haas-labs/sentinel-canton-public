@@ -214,4 +214,5 @@ class CapabilityDriftDetector(CantonUpdateDetector):
             offset=self.last_offset,
             synchronizer_id=hosting.synchronizer,
             record_time=hosting.valid_from or int(time.time() * 1000),
+            participant_id=self.participant_id,  # the node whose Admin API was polled
         )

@@ -192,6 +192,26 @@ def test_poll_thresholds_baseline_then_drop_via_fake_reader():
     assert thr[0].metadata.get("source") == "admin_api"
 
 
+def test_admin_api_alert_is_stamped_with_the_detectors_node():
+    # a poll has no update in hand: its alert still carries the node, like the Ledger-API half's
+    from sentinel_canton.runtime import hash_id
+    node = "node-a::1220aa"
+    d = build_detector("capability_drift", {"participant_id": node})
+    d.init()
+    sink = ListEventSink()
+    d.outputs.events = sink
+    d.state.hosts[("counterparty::x", "sync1::y")] = {"p1::a": "CONFIRMATION"}
+    d.reader = _FakeReader([3, 2])
+
+    async def drive():
+        await d.poll_thresholds()
+        await d.poll_thresholds()
+
+    asyncio.run(drive())
+    (thr,) = [e for e in sink.events if e.metadata.get("field") == "threshold"]
+    assert thr.metadata["source_participant_hash"] == hash_id(node)
+
+
 def test_poll_thresholds_covers_multiple_syncs_and_hostings():
     # poll_thresholds is a double loop: every synchronizer, every PartyToParticipant mapping on it.
     # Seed two syncs and return two hostings per sync so a bug in either loop level is exercised.
