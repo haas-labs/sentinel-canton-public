@@ -9,6 +9,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from sentinel.models.chains.canton.update import CantonUpdate
+from sentinel.models.config import Configuration
 from sentinel_canton.runner import ListEventSink, _parameters, build_detector
 from sentinel_canton.runtime import hash_id
 
@@ -122,3 +123,38 @@ def test_participant_id_from_the_env_is_stripped(monkeypatch):
     assert _parameters("stakeholder_anomaly")["participant_id"] == NODE_A
     monkeypatch.setenv("CANTON_PARTICIPANT_ID", "   ")
     assert "participant_id" not in _parameters("stakeholder_anomaly")
+
+
+def _condition(config, status="ACTIVE"):
+    return Configuration(**{
+        "id": 991, "createdAt": 1, "updatedAt": 5, "status": status, "name": "c", "source": "ATTACK_DETECTOR",
+        "contract": {"id": 1, "createdAt": 1, "updatedAt": 1, "projectId": 1, "tenantId": 1, "chainUid": "canton", "name": "p", "address": "client::1220aa"},
+        "schema": {"id": 3, "createdAt": 1, "updatedAt": 1, "status": "ACTIVE", "name": "Canton-StakeholderAnomaly", "version": "0.2.1"},
+        "config": config,
+    })
+
+
+def test_live_condition_with_empty_participant_id_keeps_the_env_node(monkeypatch):
+    # A live condition change lands on top of the profile parameters: the form's participant_id=""
+    # must not unscope the detector, while a node the condition names itself still wins.
+    monkeypatch.setenv("CANTON_PARTICIPANT_ID", NODE_A)
+    monkeypatch.delenv("CANTON_PARAMETERS", raising=False)
+
+    async def run():
+        detector = build_detector("stakeholder_anomaly", _parameters("stakeholder_anomaly"))
+        sink = ListEventSink()
+        detector.outputs.events = sink
+        detector.init()
+        await detector.on_init()
+        bloat = _updates("371_stakeholder_bloat.jsonl", NODE_B)
+        parties = sorted({p for u in bloat for e in u.events for p in e.signatories + e.observers})
+        await detector.on_config_change(config=_condition({"participant_id": "", "monitored_parties": parties}))
+        assert detector.participant_id == NODE_A
+        for u in bloat:
+            await detector.handle_update(u)
+        assert sink.events == [], "node B's bloat alerts an unscoped detector, never node A's"
+        await detector.on_config_change(config=_condition({"participant_id": NODE_B}))
+        assert detector.participant_id == NODE_B
+        await detector.on_config_change(config=_condition({}, status="DISABLED"))
+        assert detector.participant_id == NODE_A
+    asyncio.run(run())

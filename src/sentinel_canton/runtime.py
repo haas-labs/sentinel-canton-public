@@ -136,6 +136,10 @@ class CantonUpdateDetector:
             self.logger.info(f"configuration {config.id} {config.status.value}: back to profile parameters")
         else:
             fields = dict(config.config or {})
+            # The platform form saves the CantonSchema default (participant_id=""): an empty value
+            # must not clear the node the profile/env scoped this detector to.
+            if not fields.get("participant_id"):
+                fields.pop("participant_id", None)
             party = getattr(config.contract, "address", None)
             if party and not fields.get("monitored_parties"):
                 fields["monitored_parties"] = sorted(set(base.get("monitored_parties") or []) | {party})
