@@ -142,7 +142,7 @@ class CantonUpdateDetector:
     ) -> Event:
         """
         Build and send the Event every Canton detector emits alike: blockchain fixed to canton,
-        ts = the update's record_time, and offset / update_id / synchronizer_id always in metadata so
+        ts = the update's record_time, and offset/update_id/synchronizer_id always in metadata so
         an alert is traceable to the ledger. Metadata is flattened to strings, with the description
         under `desc` and the update id under `tx_hash` (how the platform reads the message and builds
         its explorer link). Callers pass ids already hashed (see hash_id).

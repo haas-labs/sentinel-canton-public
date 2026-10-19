@@ -26,7 +26,7 @@ def _run(name, params=None):
 
 
 def _iou_parties():
-    """Client / counterparty / stranger ids as they appear on Iou creations in the fixture."""
+    """Client/counterparty/stranger ids as they appear on Iou creations in the fixture."""
     counts = Counter()
     for line in STREAM.read_text().splitlines():
         if not line.strip():
