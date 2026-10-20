@@ -13,8 +13,8 @@ Access: this is the third tier of the README (the Admin API is exposed only by a
 owns the participant). Connect to it as follows:
 - Your own node: enable the Admin API on the participant and pass its plaintext address as `url`
   (e.g. `localhost:<admin-port>`), with `secure=False`.
-- MainNet / TestNet: use the Admin API endpoint your operator gives you, with `secure=True` (TLS
-  with the system roots). If the operator requires mTLS, also pass `client_cert` / `client_key`
+- MainNet/TestNet: use the Admin API endpoint your operator gives you, with `secure=True` (TLS
+  with the system roots). If the operator requires mTLS, also pass `client_cert`/`client_key`
   (PEM files, both or neither).
 """
 

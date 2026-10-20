@@ -6,7 +6,7 @@ from sentinel.manifest import BaseSchema, MetadataModel, NetworkTag, Status, Tag
 
 class Schema(BaseSchema):
     """
-    Configuration of the Canton stakeholder / observer anomaly detector.
+    Configuration of the Canton stakeholder/observer anomaly detector.
     Until it is registered as a monitoring condition, the same fields are read
     from the sentry's `parameters` in the profile.
     """

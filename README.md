@@ -78,7 +78,7 @@ Pass as JSON in `CANTON_PARAMETERS`. Examples:
 Set `monitored_parties` to the client's own party ids. If it is empty, `topology_drift` treats the
 client's own hosting changes as counterparty signals (it emits first-seen / drift for the client).
 
-## Install / build
+## Install/build
 
 Requires Python 3.10+ and pip 21.3+ (editable installs read `pyproject.toml`, PEP 660). An older
 pip fails before the Python version check is even reached, e.g. on the stock macOS Python 3.9 /
