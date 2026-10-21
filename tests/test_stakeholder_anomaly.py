@@ -1,4 +1,4 @@
-"""Stakeholder / observer anomaly against the fixtures captured from a real participant: the
+"""Stakeholder/observer anomaly against the fixtures captured from a real participant: the
 bloated Iou must alert once, normal traffic must not, a per-template limit overrides the default,
 and monitored parties scope the check to the contracts they are a stakeholder of."""
 import re

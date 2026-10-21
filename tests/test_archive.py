@@ -1,4 +1,4 @@
-"""An archived contract in the Canton stream (Create / Exercise / Archive), against the updates
+"""An archived contract in the Canton stream (Create/Exercise/Archive), against the updates
 captured from a real participant when the payer archived an Iou the client held.
 
 The adapter asks for the LEDGER_EFFECTS shape, so the archive arrives as the consuming exercise of
