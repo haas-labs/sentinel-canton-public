@@ -6,6 +6,8 @@ permission (Observation < Confirmation < Submission). The Ledger API streams eve
 ParticipantAuthorization* event, for every party on the synchronizer, so the client's participant
 sees its counterparties' hosting move. This state is the baseline those changes are judged against.
 
+Persistence: with `path` set, the whole state is written as JSON after every change, so a
+restarted sentry does not re-alert on what it already knew.
 """
 
 import json
@@ -60,6 +62,9 @@ class TopologyState:
 
     def synchronizers(self) -> List[str]:
         return sorted({sync for (_, sync) in list(self.hosts) + list(self.thresholds) if sync})
+
+    def threshold(self, party: str, synchronizer: str) -> Optional[int]:
+        return self.thresholds.get((party, synchronizer))
 
     def set_threshold(self, party: str, synchronizer: str, threshold: int) -> Optional[int]:
         """Record the threshold read from the Admin API; returns the previous one, None on first read."""

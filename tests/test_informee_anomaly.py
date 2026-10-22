@@ -84,7 +84,7 @@ def test_share_with_a_stranger_alerts_with_the_choice_and_the_party():
     assert meta(transfer)["choice"] == "Transfer"
     assert meta(share)["template_id"].endswith(":Iou:Iou")
     assert not re.search(r"(client|counterparty|stranger)::", str(meta(share))), "ids leave only as hashes"
-    assert meta(share)["policy"]["name"] == "Canton Informee Anomaly"
+    assert meta(share)["policy"]["name"] == "Canton-InformeeAnomaly"
 
 
 def test_bloated_iou_is_also_a_visibility_breach():

@@ -1,0 +1,66 @@
+name: Release
+
+# Publishes the wheel to CodeArtifact (domain haas, repo sentinel-pypi), the same index
+# ext-sentinel-py-sdk is published to, when a version tag is pushed.
+on:
+  push:
+    tags:
+    - "[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+
+    - name: Check the tag matches the package version
+      run: |
+        VERSION=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
+        if [ "$VERSION" != "${GITHUB_REF_NAME}" ]; then
+          echo "tag ${GITHUB_REF_NAME} does not match pyproject version ${VERSION}"; exit 1
+        fi
+
+    # pyproject.toml declares the SDK as a git dependency so the package installs in one step
+    # from GitHub, where the SDK is public. A wheel served from an index can't carry that: it
+    # clashes with consumers pinning the SDK from CodeArtifact and needs git at install time.
+    # Only the published wheel gets the version range; the repo's pyproject.toml is not changed.
+    - name: Declare the SDK as a version range for the CodeArtifact wheel
+      env:
+        SDK_SPEC: "ext-sentinel-py-sdk>=0.5.87,<0.6"
+      run: |
+        python - <<'EOF'
+        import os, re, pathlib
+        path = pathlib.Path("pyproject.toml")
+        text, count = re.subn(r'"ext-sentinel-py-sdk\s*@\s*git\+[^"]*"', f'"{os.environ["SDK_SPEC"]}"', path.read_text())
+        if count != 1:
+            raise SystemExit(f"expected one ext-sentinel-py-sdk git dependency, found {count}")
+        path.write_text(text)
+        EOF
+        grep -n "ext-sentinel-py-sdk" pyproject.toml
+
+    - name: Build
+      run: |
+        pip install build twine
+        python -m build --wheel
+        twine check dist/*
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: eu-west-1
+
+    - name: Publish to CodeArtifact
+      run: |
+        aws codeartifact login \
+          --tool twine \
+          --repository sentinel-pypi \
+          --domain haas \
+          --domain-owner ${{ secrets.AWS_ACCOUNT_ID }} \
+          --region eu-west-1
+        twine upload --repository codeartifact dist/*.whl

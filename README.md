@@ -42,6 +42,10 @@ Each detector ships a `manifest.py` with a `Schema` (its parameters, used to val
 `CANTON_PARAMETERS`) and a `MetadataModel` (name, version, icon, tags, FAQ, status). Standalone only
 `name` and `version` are read at runtime; the rest is the detector's **registration contract for the
 Extractor platform** and is kept intact so a detector can be registered there without a second source.
+The platform matches a monitoring condition to its detector by the schema `name` and the `0.2` version
+line, so `name` and `version` follow the platform's registered schemas (`Canton-TopologyDrift`,
+`Canton-CapabilityDrift`, `Canton-StakeholderAnomaly`, `Canton-ReassignmentLimbo`,
+`Canton-InformeeAnomaly`, all `0.2.x`); a different name drops every condition without a log line.
 
 ### Parameters per detector
 
@@ -87,7 +91,7 @@ pip is older than 21.3.
 
 ```bash
 pip install .                 # core; add .[dev] for tests, .[admin] for capability_drift's Admin-API path
-docker build -f deploy/Dockerfile -t sentinel-canton:0.1.0 .
+docker build -f deploy/Dockerfile -t sentinel-canton:0.2.0 .
 ```
 
 ## Run
@@ -109,6 +113,7 @@ cp .env.example .env
 | `CANTON_EVENTS_TOPIC` | `canton.localnet.events` | Output alert topic |
 | `CANTON_CONSUMER_GROUP` | `sentinel-canton` | Consumer group |
 | `CANTON_ADMIN_API_URL` | `localhost:5012` | capability_drift's participant Admin API (needs `[admin]`); empty disables it; `admin_api_url` in `CANTON_PARAMETERS` wins |
+| `CANTON_PARTICIPANT_ID` | `` (empty) | The node this detector watches when several trunks share the topic; empty = every node; `participant_id` in `CANTON_PARAMETERS` wins |
 | `CANTON_PARAMETERS` | `` (empty) | JSON of detector parameters; empty = defaults |
 | `CANTON_INPUT_PATH` | — | fs mode: a `.jsonl` file or directory of fixtures |
 | `CANTON_STATE_DIR` | — | dir for stateful detectors' `state_path` (defaults `<dir>/<detector>.state.json` when set) |
@@ -121,13 +126,25 @@ CANTON_DETECTOR=stakeholder_anomaly sentinel-canton
 CANTON_DETECTOR=stakeholder_anomaly CANTON_INPUT=fs CANTON_INPUT_PATH=tests/fixtures/all_scenarios.jsonl sentinel-canton
 ```
 
+### Several nodes on one topic
+
+trunk-canton stamps every record with `participant_id`, the node it read it from. When several
+trunks publish to one topic, set `CANTON_PARTICIPANT_ID` (or `participant_id` in
+`CANTON_PARAMETERS`) to the node the detector watches. Updates from any other node are then dropped
+before deduplication, snapshots included, so another node's data never reaches the detector's state
+or its alerts. Deduplication is by `(participant_id, update_id)`, since the same transaction seen
+by two nodes has one `update_id`. Records without `participant_id` are still read. An unscoped
+detector handles every node's copy and logs a warning once a second node appears. Alerts carry the
+node as `source_participant_hash` (sha256). Reading the field needs the Sentinel SDK with
+`CantonUpdate.participant_id` (ext-sentinel-py-sdk 0.5.87 or later; pyproject.toml pins `v0.5.87`).
+
 ## Deploy (Helm)
 
 One release per detector; select it with `--set detector=...`:
 
 ```bash
 helm install stakeholder deploy/helm/sentinel-canton \
-  --set image.repository=<registry>/sentinel-canton --set image.tag=0.1.0 \
+  --set image.repository=<registry>/sentinel-canton --set image.tag=0.2.0 \
   --set detector=stakeholder_anomaly \
   --set canton.kafkaBootstrap=<broker>:9092 \
   --set canton.txTopic=canton.devnet.tx

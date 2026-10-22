@@ -1,6 +1,6 @@
 image:
   repository: sentinel-canton
-  tag: "0.1.0"
+  tag: "0.2.0"
   pullPolicy: IfNotPresent
 
 # Which detector this release runs (see the registry): stakeholder_anomaly |
@@ -21,6 +21,9 @@ canton:
   adminApiUrl: ""
   # JSON string of detector parameters (monitored_parties, thresholds, ...). Empty = profile defaults.
   parameters: ""
+  # The node this detector watches when several trunks share the topic (participant_id on every
+  # record). Empty = every node on the topic.
+  participantId: ""
 
 # Stateful detectors (reassignment_limbo, topology_drift) persist JSON state; enable for those.
 # reassignment_limbo needs it: without a volume, every restart forgets the open reassignments, so a

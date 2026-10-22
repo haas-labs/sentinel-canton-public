@@ -1,10 +1,12 @@
 from typing import Dict, List
 
 from pydantic import Field
-from sentinel.manifest import BaseSchema, MetadataModel, NetworkTag, Status, Tag
+from sentinel.manifest import MetadataModel, NetworkTag, Status, Tag
+
+from sentinel_canton.schema import CantonSchema
 
 
-class Schema(BaseSchema):
+class Schema(CantonSchema):
     """
     Configuration of the Canton informee-tree anomaly detector.
     """
@@ -20,11 +22,12 @@ class Schema(BaseSchema):
 
 
 metadata = MetadataModel(
-    name="Canton Informee Anomaly",
+    name="Canton-InformeeAnomaly",
     title="Canton Informee Anomaly",
-    version="0.2.0",
+    author="hacken",
+    version="0.2.2",
     status=Status.ACTIVE,
-    icon="https://cdn-icons-png.flaticon.com/512/11494/11494910.png",
+    icon="https://directus.messari.io/assets/ff4a67ec-8a37-436b-97d6-4a9e26ad33e3",
     description=(
         "Alerts when, within the client's own view, a sub-action under a choice is witnessed by a party "
         "that is not its own informee (no configuration), or a party appears on a template where it is "
@@ -34,6 +37,7 @@ metadata = MetadataModel(
     tags=[Tag.SECURITY, Tag.COMPLIANCE],
     network_tags=[NetworkTag.CANTON],
     faq=[
-        {"name": "What can it see?", "value": "Only the sub-actions where one of the client's parties is an informee; that is Canton's sub-transaction privacy."},
+        {"name": "What can it see?", "value": "Only the sub-actions, on the node it watches, where one of the client's parties is an informee; that is Canton's sub-transaction privacy."},
+        {"name": "Which node does it watch?", "value": "Only the node set in Participant (node). Leave it empty when a single node feeds the topic; set it when several nodes publish to the same topic, so the alerts never come from another company's node."},
     ],
 )

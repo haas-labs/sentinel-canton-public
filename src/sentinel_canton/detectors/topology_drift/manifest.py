@@ -1,10 +1,12 @@
 from typing import Dict, List
 
 from pydantic import Field
-from sentinel.manifest import BaseSchema, MetadataModel, NetworkTag, Status, Tag
+from sentinel.manifest import MetadataModel, NetworkTag, Status, Tag
+
+from sentinel_canton.schema import CantonSchema
 
 
-class Schema(BaseSchema):
+class Schema(CantonSchema):
     """Configuration of the Canton topology drift detector."""
 
     monitored_parties: List[str] = Field(default_factory=list, title="Monitored parties", description="The client's parties; every other party is a counterparty")
@@ -14,11 +16,12 @@ class Schema(BaseSchema):
 
 
 metadata = MetadataModel(
-    name="Canton Topology Drift",
+    name="Canton-TopologyDrift",
     title="Canton Topology Drift",
-    version="0.1.1",
+    author="hacken",
+    version="0.2.1",
     status=Status.ACTIVE,
-    icon="https://cdn-icons-png.flaticon.com/512/11494/11494910.png",
+    icon="https://directus.messari.io/assets/ff4a67ec-8a37-436b-97d6-4a9e26ad33e3",
     description=(
         "Alerts when a counterparty changes the participant that hosts it mid-relationship, or is "
         "newly hosted on a participant never seen for it. A party changing hosting is the Canton "
@@ -27,7 +30,8 @@ metadata = MetadataModel(
     tags=[Tag.SECURITY],
     network_tags=[NetworkTag.CANTON],
     faq=[
-        {"name": "What does it see?", "value": "Every party hosted on the synchronizers the client's participant is connected to; the topology is public by design."},
+        {"name": "What does it see?", "value": "The hosting of every party the node's Ledger API user may read: the client's own parties with CanReadAs, every party on the synchronizer with CanReadAsAnyParty. Topology is authorized per party, like transactions."},
         {"name": "First contact?", "value": "A never-seen party records its baseline and emits an informational event; drift alerts start from the next change."},
+        {"name": "Which node does it watch?", "value": "Only the node set in Participant (node). Leave it empty when a single node feeds the topic; set it when several nodes publish to the same topic, so the alerts never come from another company's node."},
     ],
 )

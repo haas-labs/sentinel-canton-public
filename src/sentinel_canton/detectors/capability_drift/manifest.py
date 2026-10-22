@@ -1,10 +1,12 @@
 from typing import Dict, List
 
 from pydantic import Field
-from sentinel.manifest import BaseSchema, MetadataModel, NetworkTag, Severity, Status, Tag
+from sentinel.manifest import MetadataModel, NetworkTag, Severity, Status, Tag
+
+from sentinel_canton.schema import CantonSchema
 
 
-class Schema(BaseSchema):
+class Schema(CantonSchema):
     """Configuration of the Canton key and capability drift detector."""
 
     monitored_parties: List[str] = Field(default_factory=list, title="Monitored parties", description="The client's parties; every other party is a counterparty")
@@ -20,11 +22,12 @@ class Schema(BaseSchema):
 
 
 metadata = MetadataModel(
-    name="Canton Capability Drift",
+    name="Canton-CapabilityDrift",
     title="Canton Capability Drift",
-    version="0.1.3",
+    author="hacken",
+    version="0.2.1",
     status=Status.ACTIVE,
-    icon="https://cdn-icons-png.flaticon.com/512/11494/11494910.png",
+    icon="https://directus.messari.io/assets/ff4a67ec-8a37-436b-97d6-4a9e26ad33e3",
     description=(
         "Alerts when a counterparty becomes easier to hijack: a hosting participant gains "
         "Confirmation or Submission permission it did not have, or (with Admin API access) the "
@@ -33,6 +36,7 @@ metadata = MetadataModel(
     tags=[Tag.SECURITY],
     network_tags=[NetworkTag.CANTON],
     faq=[
-        {"name": "Why two modes?", "value": "Permission changes arrive on the Ledger API; the confirmation threshold does not, it is only readable through the participant's Admin API."},
+        {"name": "Why two modes?", "value": "Permission changes arrive on the Ledger API; the confirmation threshold does not, it is only readable through the participant's Admin API. Point the Admin API at the same node as Participant (node)."},
+        {"name": "Which node does it watch?", "value": "Only the node set in Participant (node). Leave it empty when a single node feeds the topic; set it when several nodes publish to the same topic, so the alerts never come from another company's node."},
     ],
 )
