@@ -57,6 +57,6 @@ All notable changes to this project are documented in this file. The format foll
 - `reassignment_limbo`: alerts raised by the ticker carry the detector's node.
 - Helm chart and image version 0.2.0.
 
-## [0.1.0] - 2026-10-14
+## [0.1.0]
 
 Initial public release.
