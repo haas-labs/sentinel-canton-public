@@ -10,6 +10,8 @@ The data models (`CantonUpdate`, `Event`, manifest enums) come from the public
 (`AsyncCoreSentry`) is replaced by a thin async runner in this repo, so detectors run standalone
 without the SDK's launch/profile machinery.
 
+Changes between versions are listed in [CHANGELOG.md](CHANGELOG.md).
+
 ## How it works
 
 ```
