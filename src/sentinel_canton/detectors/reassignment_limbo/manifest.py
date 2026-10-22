@@ -1,10 +1,12 @@
 from typing import List
 
 from pydantic import Field
-from sentinel.manifest import BaseSchema, MetadataModel, NetworkTag, Severity, Status, Tag
+from sentinel.manifest import MetadataModel, NetworkTag, Severity, Status, Tag
+
+from sentinel_canton.schema import CantonSchema
 
 
-class Schema(BaseSchema):
+class Schema(CantonSchema):
     """Configuration of the Canton reassignment limbo detector."""
 
     monitored_parties: List[str] = Field(default_factory=list, title="Monitored parties", description="The client's parties: only unassigns they submitted or are a stakeholder of are tracked (empty = all)")
@@ -18,11 +20,12 @@ class Schema(BaseSchema):
 
 
 metadata = MetadataModel(
-    name="Canton Reassignment Limbo",
+    name="Canton-ReassignmentLimbo",
     title="Canton Reassignment Limbo",
-    version="0.2.0",
+    author="hacken",
+    version="0.2.2",
     status=Status.ACTIVE,
-    icon="https://cdn-icons-png.flaticon.com/512/11494/11494910.png",
+    icon="https://directus.messari.io/assets/ff4a67ec-8a37-436b-97d6-4a9e26ad33e3",
     description=(
         "Alerts when a contract unassigned from one synchronizer is not assigned on the target "
         "within the window: between the two steps it is usable on neither side, and a stalled "
@@ -34,5 +37,6 @@ metadata = MetadataModel(
         {"name": "Which clock?", "value": "Ledger time: the latest record_time seen, including checkpoints; the wall clock only fills in when no update arrives."},
         {"name": "After a restart?", "value": "Open reassignments come back from the state file, and the bootstrap snapshot lists pending ones too."},
         {"name": "How much is lost on a crash?", "value": "Up to save_interval_seconds of open/close changes on a hard kill (SIGKILL, OOM, node loss); a clean stop (SIGTERM, SIGINT) writes them first, and on a quiet stream a held-back change is written when the interval ends. save_interval_seconds=0 loses nothing, at the cost of a write per change. A lost close can raise a false limbo alert after the restart; a lost open comes back only through the bootstrap snapshot."},
+        {"name": "Which node does it watch?", "value": "Only the node set in Participant (node). Leave it empty when a single node feeds the topic; set it when several nodes publish to the same topic, so the alerts never come from another company's node."},
     ],
 )

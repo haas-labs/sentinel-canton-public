@@ -1,0 +1,30 @@
+[
+ {
+  "party": "client::12209425827cf655566e1729e3c9b234a8981d6b79d36c6941c10008e1d214639ff2",
+  "synchronizer": "sync1::122001f5b26c62d27db2859102509202970c077384232f7661d68414a78f3c2e272b",
+  "threshold": 1,
+  "participants": {
+   "p1::12209425827cf655566e1729e3c9b234a8981d6b79d36c6941c10008e1d214639ff2": "SUBMISSION"
+  },
+  "valid_from": 1788963783156
+ },
+ {
+  "party": "stranger::1220f86def2fe7666f475363b63516eae58a7e51b1bfe05fdefc8715582b456f8a27",
+  "synchronizer": "sync1::122001f5b26c62d27db2859102509202970c077384232f7661d68414a78f3c2e272b",
+  "threshold": 1,
+  "participants": {
+   "p2::1220f86def2fe7666f475363b63516eae58a7e51b1bfe05fdefc8715582b456f8a27": "SUBMISSION"
+  },
+  "valid_from": 1788963786180
+ },
+ {
+  "party": "counterparty::1220f86def2fe7666f475363b63516eae58a7e51b1bfe05fdefc8715582b456f8a27",
+  "synchronizer": "sync1::122001f5b26c62d27db2859102509202970c077384232f7661d68414a78f3c2e272b",
+  "threshold": 2,
+  "participants": {
+   "p2::1220f86def2fe7666f475363b63516eae58a7e51b1bfe05fdefc8715582b456f8a27": "SUBMISSION",
+   "p1::12209425827cf655566e1729e3c9b234a8981d6b79d36c6941c10008e1d214639ff2": "SUBMISSION"
+  },
+  "valid_from": 1788996968397
+ }
+]

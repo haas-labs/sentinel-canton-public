@@ -40,6 +40,8 @@ class StakeholderAnomalyDetector(CantonUpdateDetector):
         for event in update.events:
             if event.type != CantonEventType.CREATED:
                 continue
+            if self.monitored_parties and not (set(event.stakeholders) & self.monitored_parties):
+                continue  # only judge contracts a monitored party is a stakeholder of
             self.seen["created"] += 1
             count = len(event.stakeholders)
             limit = self.limit_for(event.template_id or "")

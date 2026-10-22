@@ -389,6 +389,27 @@ def test_ticker_fires_on_wall_clock_when_ledger_clock_is_stale():
     asyncio.run(scenario())
 
 
+def test_ticker_alert_is_stamped_with_the_detectors_node():
+    """Canton: several trunks can share one topic, and every alert says which node it is about.
+    Why: the ticker builds its own update; without the node its alerts would be the only unstamped ones.
+    Asserts: a scoped detector's ticker-driven limbo alert carries source_participant_hash of its node."""
+    from sentinel_canton.runtime import hash_id
+    node = "node-a::1220aa"
+
+    async def scenario():
+        detector = build_detector("reassignment_limbo", {"pending_window_seconds": 0, "check_interval_seconds": 9999, "participant_id": node})
+        detector.init()
+        detector.open = {"r1": _open_item()}
+        sink = ListEventSink()
+        detector.outputs.events = sink
+        await detector.check(10_000_000, None)  # what the ticker calls: no update in hand
+        return sink.events
+
+    events = asyncio.run(scenario())
+    assert [e.type for e in events] == ["canton_reassignment_limbo"]
+    assert events[0].metadata["source_participant_hash"] == hash_id(node)
+
+
 # ---------------------------------------------------------------------------------- volume
 
 def test_volume_alert_above_hourly_limit():

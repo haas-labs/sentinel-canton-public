@@ -1,10 +1,12 @@
 from typing import Dict, List
 
 from pydantic import Field
-from sentinel.manifest import BaseSchema, MetadataModel, NetworkTag, Status, Tag
+from sentinel.manifest import MetadataModel, NetworkTag, Status, Tag
+
+from sentinel_canton.schema import CantonSchema
 
 
-class Schema(BaseSchema):
+class Schema(CantonSchema):
     """
     Configuration of the Canton stakeholder/observer anomaly detector.
     Until it is registered as a monitoring condition, the same fields are read
@@ -29,11 +31,12 @@ class Schema(BaseSchema):
 
 
 metadata = MetadataModel(
-    name="Canton Stakeholder Anomaly",
+    name="Canton-StakeholderAnomaly",
     title="Canton Stakeholder Anomaly",
-    version="0.1.1",
+    author="hacken",
+    version="0.2.1",
     status=Status.ACTIVE,
-    icon="https://cdn-icons-png.flaticon.com/512/11494/11494910.png",
+    icon="https://directus.messari.io/assets/ff4a67ec-8a37-436b-97d6-4a9e26ad33e3",
     description=(
         "Alerts when a contract the client is party to is created with more signatories plus "
         "observers than the template's policy allows. Every listed party must store the contract, "
@@ -50,5 +53,6 @@ metadata = MetadataModel(
             "name": "How is the limit chosen?",
             "value": "max_stakeholders_by_template first (full template id or Module:Entity), then max_stakeholders_default.",
         },
+        {"name": "Which node does it watch?", "value": "Only the node set in Participant (node). Leave it empty when a single node feeds the topic; set it when several nodes publish to the same topic, so the alerts never come from another company's node."},
     ],
 )

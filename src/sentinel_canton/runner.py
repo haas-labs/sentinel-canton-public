@@ -19,7 +19,7 @@ from sentinel.models.event import Event
 from sentinel.models.chains.canton.update import CantonUpdate
 
 # Parameter keys the runner injects itself (not user-facing); excluded from the unknown-key check.
-_RUNNER_KEYS = {"state_path"}
+_RUNNER_KEYS = {"state_path", "participant_id"}  # participant_id: the node scope, read by the runtime
 
 DEFAULT_ADMIN_API_URL = "localhost:5012"  # a local participant's Admin API
 
@@ -27,6 +27,11 @@ DEFAULT_ADMIN_API_URL = "localhost:5012"  # a local participant's Admin API
 def _parameters(name: str) -> dict:
     raw = os.environ.get("CANTON_PARAMETERS", "").strip()
     params = json.loads(raw) if raw else {}
+    # The node this detector watches, when several trunks share the topic. A non-empty participant_id
+    # in CANTON_PARAMETERS wins; an empty one (the platform form's default) does not clear the env's.
+    participant_id = os.environ.get("CANTON_PARTICIPANT_ID", "").strip()
+    if participant_id and not params.get("participant_id"):
+        params["participant_id"] = participant_id
     # Only capability_drift accepts admin_api_url; CANTON_ADMIN_API_URL= (empty) disables it.
     if name == "capability_drift" and "admin_api_url" not in params:
         params["admin_api_url"] = os.environ.get("CANTON_ADMIN_API_URL", DEFAULT_ADMIN_API_URL)

@@ -227,8 +227,8 @@ class ReassignmentLimboDetector(CantonUpdateDetector):
         self.save()
 
     def synthetic_update(self, item: Dict) -> CantonUpdate:
-        """The ticker has no update in hand: point the alert at the unassign itself."""
-        return CantonUpdate(kind=CantonUpdateKind.REASSIGNMENT, offset=item["offset"] or 0, update_id=item["update_id"], synchronizer_id=item["source"], record_time=self.now_ms or None)
+        """The ticker has no update in hand: point the alert at the unassign itself, on this detector's node."""
+        return CantonUpdate(kind=CantonUpdateKind.REASSIGNMENT, offset=item["offset"] or 0, update_id=item["update_id"], synchronizer_id=item["source"], record_time=self.now_ms or None, participant_id=self.participant_id)
 
     async def check_volume(self, update: CantonUpdate, submitter: str, at_ms: int) -> None:
         hour = 3_600_000
