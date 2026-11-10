@@ -1,0 +1,71 @@
+name: Feature request
+description: Suggest an improvement to the runner, the configuration, the packaging, the deploy assets or the documentation.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for improvements that are not detection logic. To propose a new detector or a new rule in an existing one, use the detector request form.
+
+        **This issue is public.** Do not paste secrets, credentials, or the party ids and participant ids of real clients.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you submit
+      options:
+        - label: I searched the open and closed issues and did not find this request.
+          required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Runner and runtime (input, output, deduplication, state)
+        - Configuration (environment variables, CANTON_PARAMETERS)
+        - Detector manifest and schema
+        - Docker image
+        - Helm chart
+        - Tests and fixtures
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What you are trying to do and what stops you today.
+      placeholder: I want to ... but I cannot because ...
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: What you would like to happen. For a configuration or interface change, show how it would look.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other ways to solve it, including a workaround you use today.
+  - type: input
+    id: version
+    attributes:
+      label: sentinel-canton version
+      description: The version you run today, if any.
+      placeholder: "0.2.0"
+  - type: dropdown
+    id: contribute
+    attributes:
+      label: Would you open a pull request for this?
+      options:
+        - "Yes"
+        - "Yes, with guidance"
+        - "No"
+  - type: textarea
+    id: context
+    attributes:
+      label: Anything else

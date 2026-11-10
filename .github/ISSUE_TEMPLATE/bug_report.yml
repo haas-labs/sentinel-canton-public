@@ -1,0 +1,173 @@
+name: Bug report
+description: A detector or the runner crashes, raises a wrong alert, misses an alert, or does not deploy as documented.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a problem with sentinel-canton.
+
+        **This issue is public. Before you submit, remove anything sensitive:** tokens and JWTs, passwords, Kafka credentials, participant or Admin API credentials, internal hostnames, and the party ids, participant ids and contract payloads of real clients. Replace them with placeholders such as `client::<id>` or `<broker>:9092`.
+
+        If the records never reach the input topic, the problem is most likely in the ingestion adapter: report it in [trunk-canton-public](https://github.com/haas-labs/trunk-canton-public/issues/new/choose) instead.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you submit
+      options:
+        - label: I searched the open and closed issues and did not find this problem.
+          required: true
+        - label: I removed secrets, credentials and real client identifiers from everything below.
+          required: true
+  - type: dropdown
+    id: problem
+    attributes:
+      label: Kind of problem
+      options:
+        - Crash or error at startup or while running
+        - False alert (an alert that should not have been raised)
+        - Missed alert (an alert that should have been raised)
+        - Wrong or incomplete alert content
+        - State or restart problem (state file, duplicate or lost alerts after a restart)
+        - Install, Docker image or Helm chart
+        - Documentation is wrong or unclear
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: detector
+    attributes:
+      label: Detector
+      description: The value of `CANTON_DETECTOR`. Select every detector that is affected.
+      multiple: true
+      options:
+        - stakeholder_anomaly
+        - informee_anomaly
+        - topology_drift
+        - reassignment_limbo
+        - capability_drift
+        - Not specific to a detector (runner, packaging, deploy)
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: A clear description of the problem. For a false or missed alert, say which update should or should not have alerted, and why.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: The smallest set of steps that shows the problem. A replay with `CANTON_INPUT=fs` over a `.jsonl` file is the easiest for a maintainer to rerun.
+      placeholder: |
+        1. Set CANTON_DETECTOR=... and CANTON_PARAMETERS=...
+        2. Run `sentinel-canton` against ...
+        3. See ...
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: sentinel-canton version
+      description: Output of `pip show sentinel-canton`, the image tag, or the commit you built from.
+      placeholder: "0.2.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: run-mode
+    attributes:
+      label: How you run it
+      options:
+        - Python package (pip install, `sentinel-canton` command)
+        - Docker image built from deploy/Dockerfile
+        - Helm chart from deploy/helm/sentinel-canton
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: input-mode
+    attributes:
+      label: Input
+      description: The value of `CANTON_INPUT`.
+      options:
+        - kafka (live topic produced by trunk-canton)
+        - fs (replay of .jsonl fixtures)
+    validations:
+      required: true
+  - type: dropdown
+    id: network
+    attributes:
+      label: Canton network behind the stream
+      options:
+        - Local Canton node (for example the trunk-canton demo/localnet)
+        - Splice LocalNet
+        - DevNet
+        - TestNet
+        - MainNet
+        - Not applicable (fixture replay)
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: canton-version
+    attributes:
+      label: Canton or Splice version
+      description: The version of the participant node the stream comes from, if you know it.
+      placeholder: "Canton 3.5.16"
+  - type: input
+    id: upstream-versions
+    attributes:
+      label: trunk-canton and Sentinel SDK versions
+      description: The trunk-canton version that produced the stream, and the output of `pip show ext-sentinel-py-sdk`.
+      placeholder: "trunk-canton 0.1.1, ext-sentinel-py-sdk 0.5.87"
+  - type: input
+    id: environment
+    attributes:
+      label: Python version and operating system
+      placeholder: "Python 3.12, Ubuntu 24.04"
+  - type: dropdown
+    id: admin-api
+    attributes:
+      label: Admin API path (capability_drift only)
+      description: Whether the `[admin]` extra is installed and `admin_api_url` is set.
+      options:
+        - Not applicable
+        - Admin API enabled ([admin] extra installed and admin_api_url set)
+        - Ledger API half only (no Admin API)
+  - type: textarea
+    id: config
+    attributes:
+      label: Configuration
+      description: The `CANTON_*` variables and the `CANTON_PARAMETERS` JSON (or the Helm values you set). Replace party ids, hosts and credentials with placeholders.
+      render: shell
+      placeholder: |
+        CANTON_DETECTOR=topology_drift
+        CANTON_INPUT=kafka
+        CANTON_TX_TOPIC=canton.localnet.tx
+        CANTON_PARAMETERS={"monitored_parties": ["client::<id>"]}
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: The relevant log lines or the full traceback, not truncated. Check them for secrets and real identifiers first.
+      render: shell
+  - type: textarea
+    id: sample
+    attributes:
+      label: Sample input or alert
+      description: A redacted `CantonUpdate` record (one line of the input topic) and, if one was raised, the alert `Event`. Remove contract payloads and replace real party and participant ids.
+      render: json
+  - type: textarea
+    id: context
+    attributes:
+      label: Anything else
+      description: Links to related issues, what you already tried, or a workaround you found.
