@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Ingestion problem (records missing from the input topic)
+    url: https://github.com/haas-labs/trunk-canton-public/issues/new/choose
+    about: The CantonUpdate stream is produced by the trunk-canton adapter. Report connection and ingestion problems there.

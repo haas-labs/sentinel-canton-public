@@ -1,0 +1,105 @@
+name: Detector or detection rule request
+description: Propose a new Canton detector, or a new rule or parameter for an existing one.
+title: "[Detector]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form to propose detection logic: a new detector, or a new rule inside one of the existing detectors. For anything else (runner, packaging, deploy, documentation), use the feature request form.
+
+        **This issue is public.** Describe the scenario with placeholders such as `client::<id>`. Do not paste the party ids, participant ids, contract payloads or credentials of real clients.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you submit
+      options:
+        - label: I searched the open and closed issues and did not find this proposal.
+          required: true
+        - label: I read the detector list in the README and none of the existing detectors already covers this.
+          required: true
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope
+      options:
+        - New detector
+        - New rule or parameter in stakeholder_anomaly
+        - New rule or parameter in informee_anomaly
+        - New rule or parameter in topology_drift
+        - New rule or parameter in reassignment_limbo
+        - New rule or parameter in capability_drift
+    validations:
+      required: true
+  - type: textarea
+    id: risk
+    attributes:
+      label: What should be detected
+      description: The behavior or risk in plain words, and who is harmed if it goes unnoticed.
+      placeholder: A counterparty ... without the client being told, which means ...
+    validations:
+      required: true
+  - type: textarea
+    id: signal
+    attributes:
+      label: How it shows up in Canton data
+      description: Which fields of the `CantonUpdate` stream carry the signal, and what distinguishes the bad case from normal activity.
+    validations:
+      required: true
+  - type: checkboxes
+    id: update-kinds
+    attributes:
+      label: Update kinds involved
+      description: The kinds of update the rule would read.
+      options:
+        - label: transaction (created, exercised, archived)
+        - label: reassignment (unassigned, assigned)
+        - label: topology (authorization events, party hosting)
+        - label: snapshot (active contract set at bootstrap)
+        - label: checkpoint
+        - label: Not sure
+  - type: dropdown
+    id: data-source
+    attributes:
+      label: Data the rule needs
+      options:
+        - Only the CantonUpdate stream (Ledger API, through trunk-canton)
+        - The stream plus the participant Admin API
+        - Data that trunk-canton does not publish today
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: parameters
+    attributes:
+      label: Proposed parameters
+      description: What an operator should be able to configure in `CANTON_PARAMETERS` (monitored parties, thresholds, windows), with sensible defaults.
+      render: json
+      placeholder: |
+        {"monitored_parties": ["client::<id>"], "window_seconds": 900}
+  - type: textarea
+    id: alert
+    attributes:
+      label: Expected alert
+      description: When exactly the alert fires, the severity you would give it, and the fields a responder needs in it.
+    validations:
+      required: true
+  - type: textarea
+    id: false-positives
+    attributes:
+      label: Legitimate activity that looks the same
+      description: Normal Canton behavior that could trigger the rule (for example divulgence to a regulator, a planned migration), and how the rule should tell it apart.
+  - type: textarea
+    id: sample
+    attributes:
+      label: Sample data or scenario
+      description: A redacted `CantonUpdate` record, a fixture, or the steps that produce the scenario on a local Canton node.
+      render: json
+  - type: dropdown
+    id: contribute
+    attributes:
+      label: Would you open a pull request for this?
+      options:
+        - "Yes"
+        - "Yes, with guidance"
+        - "No"
